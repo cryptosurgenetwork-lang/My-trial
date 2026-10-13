@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>এআই টিচার</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#f6f3ff;--card:#fff;--tx:#1d1a33;--mut:#6d6a85;--p:#7c3aed;--k:#ef4444;--kh:#f59e0b;--g:#10b981;--gh:#3b82f6;--bd:#e6e1fb}
+[data-t=dark]{--bg:#12102a;--card:#1c1940;--tx:#f1eeff;--mut:#a9a5cf;--bd:#2f2a63}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Hind Siliguri',system-ui,sans-serif;background:var(--bg);color:var(--tx);padding:env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom))}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 10% 0,#c4b5fd55,transparent 40%),radial-gradient(circle at 100% 30%,#fda4af44,transparent 40%),radial-gradient(circle at 0 100%,#67e8f933,transparent 40%)}
+main{max-width:720px;margin:auto;padding:16px}
+h1,h2,h3{margin:.2em 0}
+.hero{background:linear-gradient(135deg,#7c3aed,#ec4899 55%,#f59e0b);background-size:200% 200%;animation:flow 8s ease infinite;color:#fff;border-radius:24px;padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero .em{position:absolute;right:14px;top:8px;font-size:54px;animation:bob 3s ease-in-out infinite}
+@keyframes flow{50%{background-position:100% 50%}}
+@keyframes bob{50%{transform:translateY(-8px) rotate(8deg)}}
+@keyframes pop{0%{transform:scale(.85);opacity:0}100%{transform:none;opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-bottom:12px;animation:pop .35s ease both}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{border-radius:18px;padding:14px 8px;text-align:center;color:#fff;font-weight:600}
+.stat b{display:block;font-size:28px}
+.s1{background:linear-gradient(135deg,#8b5cf6,#6366f1)}.s2{background:linear-gradient(135deg,#f59e0b,#ef4444)}.s3{background:linear-gradient(135deg,#10b981,#06b6d4)}
+button,.btn{font:inherit;border:0;border-radius:14px;padding:12px 18px;font-weight:600;color:#fff;background:linear-gradient(135deg,#7c3aed,#ec4899);cursor:pointer;transition:transform .15s}
+button:active{transform:scale(.95)}button:disabled{opacity:.5}
+button.ghost{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+button.ok{background:linear-gradient(135deg,#10b981,#06b6d4)}button.no{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+input,select,textarea{font:inherit;width:100%;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);margin:6px 0}
+textarea{min-height:130px}
+label{font-size:14px;color:var(--mut)}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+.badge{display:inline-block;min-width:34px;text-align:center;border-radius:10px;padding:2px 10px;color:#fff;font-weight:700;margin-right:6px}
+.c-ক{background:var(--k)}.c-খ{background:var(--kh)}.c-গ{background:var(--g)}.c-ঘ{background:var(--gh)}
+.pill{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--bd);color:var(--mut)}
+.ans{margin-top:10px;padding:12px;border-radius:14px;background:var(--bg);border-left:4px solid var(--p);white-space:pre-wrap}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:var(--card);border-top:1px solid var(--bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:9}
+nav a{flex:1;text-align:center;font-size:11px;color:var(--mut);padding:4px;border-radius:12px;cursor:pointer;transition:.2s}
+nav a span{display:block;font-size:22px;transition:transform .25s}
+nav a.on{color:var(--p);font-weight:700}nav a.on span{transform:translateY(-4px) scale(1.2)}
+.fc{perspective:900px;height:260px;margin:12px 0;cursor:pointer}
+.fi{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+.fc.f .fi{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:auto;color:#fff;font-size:18px;font-weight:500}
+.fr{background:linear-gradient(135deg,#7c3aed,#3b82f6)}.bk{background:linear-gradient(135deg,#10b981,#06b6d4);transform:rotateY(180deg);white-space:pre-wrap}
+.sp{width:22px;height:22px;border:3px solid #fff5;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:#1d1a33;color:#fff;padding:10px 18px;border-radius:14px;z-index:99;animation:pop .3s}
+.thumb{display:flex;gap:8px;overflow:auto;margin:8px 0}.thumb img{height:80px;border-radius:10px}
+.cf{position:fixed;top:-20px;font-size:26px;animation:fall 1.6s linear forwards;z-index:98;pointer-events:none}
+@keyframes fall{to{transform:translateY(105vh) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.fx{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(135deg,#4c1d95,#be185d,#f59e0b,#0ea5e9);background-size:300% 300%;animation:flow 14s ease infinite}
+.fx i{position:absolute;bottom:-70px;font-style:normal;animation:rise linear infinite;opacity:.85}
+@keyframes rise{to{transform:translateY(-120vh) rotate(360deg)}}
+.glass{background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(14px)}
+summary{cursor:pointer;padding:4px 0}
+
+/* ===== আল্ট্রা ডিজাইন ===== */
+body.in{padding-top:calc(env(safe-area-inset-top) + 64px);padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+body:before{background:radial-gradient(circle at 15% 5%,#8b5cf666,transparent 38%),radial-gradient(circle at 95% 25%,#ec489955,transparent 36%),radial-gradient(circle at 10% 95%,#22d3ee44,transparent 40%),radial-gradient(circle at 90% 90%,#f59e0b33,transparent 35%);background-size:140% 140%;animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{background-position:100% 100%}}
+nav:empty,.top:empty{display:none}
+svg{display:block}
+.top{position:fixed;top:0;left:0;right:0;z-index:8;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(16px)}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#ec4899);display:grid;place-items:center;color:#fff;box-shadow:0 6px 18px #7c3aed66}
+.top b{font-size:21px;background:linear-gradient(90deg,#7c3aed,#ec4899,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.top svg,.ib svg,nav svg,.stat2 svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.top .logo svg{width:22px;height:22px}
+.ib{width:40px;height:40px;padding:0;border-radius:12px;display:grid;place-items:center;margin-left:auto;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.ib svg{width:20px;height:20px}
+.card{background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,#8b5cf677,#ec489977,#22d3ee77) border-box;border:1px solid transparent;box-shadow:0 8px 28px #4c1d9514}
+.card.glass{background:linear-gradient(color-mix(in srgb,var(--card) 88%,transparent),color-mix(in srgb,var(--card) 88%,transparent)) padding-box,linear-gradient(135deg,#8b5cf677,#ec489977) border-box}
+nav{left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:520px;margin:auto;border-radius:30px;padding:8px 6px;align-items:center;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(22px);border:1px solid var(--bd);box-shadow:0 16px 44px #4c1d9545}
+nav a{position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:8px 2px}
+nav a svg{width:23px;height:23px;transition:transform .3s}
+nav a.on{color:#fff}
+nav a.on:before{content:"";position:absolute;inset:0 4px;border-radius:20px;z-index:-1;background:linear-gradient(135deg,#7c3aed,#ec4899);box-shadow:0 8px 20px #7c3aed66;animation:pop .3s}
+nav a.on svg{transform:scale(1.12)}
+nav a.fab{flex:0 0 66px;color:var(--tx)}
+nav a.fab i{width:58px;height:58px;border-radius:50%;margin-top:-38px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#f59e0b,#ec4899,#7c3aed);border:4px solid var(--bg);box-shadow:0 10px 26px #ec489988;animation:glow 2.6s ease-in-out infinite}
+nav a.fab svg{width:27px;height:27px}
+nav a.fab.on:before{display:none}
+@keyframes glow{50%{box-shadow:0 12px 40px #f59e0bcc;transform:translateY(-3px)}}
+.hero2{position:relative;border-radius:28px;padding:22px 20px;margin-bottom:14px;color:#fff;overflow:hidden;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#5b21b6,#be185d 60%,#f59e0b);background-size:200% 200%;animation:flow 10s ease infinite;box-shadow:0 16px 40px #be185d44}
+.hero2:before,.hero2:after{content:"";position:absolute;border-radius:50%;background:#ffffff22;animation:bob 6s ease-in-out infinite}
+.hero2:before{width:150px;height:150px;right:-40px;top:-60px}.hero2:after{width:90px;height:90px;left:35%;bottom:-45px;animation-delay:-3s}
+.hero2>*{position:relative;z-index:1}
+.glassbtn{background:#ffffff33;backdrop-filter:blur(6px);border:1px solid #ffffff66;padding:9px 18px}
+.ring{width:98px;height:98px;flex:none}
+.ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.ring .tr{stroke:#ffffff44}.ring .pg{stroke:#fff;animation:ringin 1.4s ease-out}
+.ring text{fill:#fff;font-weight:700;font-size:22px;font-family:inherit}
+@keyframes ringin{from{stroke-dashoffset:251.3}}
+.stat2{border-radius:22px;padding:14px;color:#fff;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;font-weight:600;font-size:13px;animation:pop .4s both}
+.stat2 svg{width:24px;height:24px}.stat2 b{font-size:30px;line-height:1}
+.stat2:after{content:"";position:absolute;right:-20px;bottom:-20px;width:76px;height:76px;border-radius:50%;background:#ffffff26}
+.h{font-size:18px;font-weight:700;margin:12px 2px 8px}
+.subs{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 12px;scroll-snap-type:x mandatory}
+.sc{flex:0 0 156px;scroll-snap-align:start;border-radius:22px;padding:16px 14px;color:#fff;cursor:pointer;animation:pop .45s both;box-shadow:0 10px 24px #0002}
+.sc b{display:block;font-size:16px;margin-bottom:22px}.sc small{opacity:.92}
+.sel-note{font-size:12px;color:var(--mut);margin:2px 2px 6px}
+main>*:nth-child(2){animation-delay:.06s}main>*:nth-child(3){animation-delay:.12s}main>*:nth-child(4){animation-delay:.18s}main>*:nth-child(5){animation-delay:.24s}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<header class="top" id="top"></header>
+<nav id="nav"></nav>
+<script>
+// ====== Firebase config: বসান Firebase Console > Project Settings > Web App থেকে ======
+const FIREBASE_CONFIG={apiKey:"AIzaSyATlpz3B40-H0xWfoK1FdL4xgAVI4y5HCE",authDomain:"ssc-e4a96.firebaseapp.com",projectId:"ssc-e4a96",storageBucket:"ssc-e4a96.firebasestorage.app",messagingSenderId:"482064243850",appId:"1:482064243850:web:40930798bf10381895e173"};
+const MODEL="gemini-2.5-flash";
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bn=n=>String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
+const S={user:null,qs:[],tab:"home",pages:[],busy:false,rev:null,flip:false,show:{},filter:"সব",out:[],open:{},f:{}};
+let db,auth;
+const ready=FIREBASE_CONFIG.apiKey;
+if(ready){firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();}
+document.documentElement.dataset.t=localStorage.t||"light";
+const toast=m=>{const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.append(d);setTimeout(()=>d.remove(),2800)};
+const confetti=()=>{for(let i=0;i<22;i++){const e=document.createElement("div");e.className="cf";e.textContent=["🎉","⭐","✨","🌈","💜"][i%5];e.style.left=Math.random()*100+"%";e.style.animationDelay=Math.random()*.5+"s";document.body.append(e);setTimeout(()=>e.remove(),2300)}};
+
+// ---------- Data ----------
+const col=()=>db.collection("users").doc(S.user.uid).collection("questions");
+async function load(){const s=await col().orderBy("createdAt","desc").get();S.qs=s.docs.map(d=>({id:d.id,...d.data()}))}
+const due=()=>S.qs.filter(q=>q.saved&&(q.due||0)<=Date.now()).sort((a,b)=>(a.due||0)-(b.due||0));
+// সহজ স্পেসড-রিপিটিশন: মনে থাকলে ব্যবধান বাড়ে, না থাকলে ১০ মিনিট পর আবার
+async function grade(q,ok){
+  let ease=q.ease||2.3,iv=q.interval||0;
+  if(ok){iv=iv<1?1:Math.round(iv*ease);ease=Math.min(3,ease+.05);q.due=Date.now()+iv*864e5;confetti()}
+  else{iv=0;ease=Math.max(1.3,ease-.2);q.due=Date.now()+6e5}
+  Object.assign(q,{ease,interval:iv,reviews:(q.reviews||0)+1,lastOk:ok});
+  await col().doc(q.id).update({ease,interval:iv,due:q.due,reviews:q.reviews,lastOk:ok});
+  S.flip=false;render();
+}
+
+// ---------- Gemini (ব্রাউজার থেকে সরাসরি; কী শুধু আপনার ডিভাইসে থাকে) ----------
+const SCHEMA={type:"ARRAY",items:{type:"OBJECT",properties:{cat:{type:"STRING",enum:["ক","খ","গ","ঘ"]},q:{type:"STRING"},marks:{type:"INTEGER"},answer:{type:"STRING"},explanation:{type:"STRING"},importance:{type:"STRING",enum:["উচ্চ","মধ্যম","কম"]},source:{type:"STRING"}},required:["cat","q","marks","answer","explanation","importance"]}};
+const MODELS=["gemini-2.5-flash","gemini-flash-latest","gemini-2.0-flash"];
+// "AIza…" কী = Google AI Studio, "AQ.…" কী = Vertex AI Express; দুটোই সমর্থিত
+async function gemini(parts,schema){
+  const key=(localStorage.gkey||"").trim();if(!key)throw new Error("সেটিংসে Gemini API কী বসান");
+  const body=JSON.stringify({contents:[{role:"user",parts}],generationConfig:{temperature:.4,...(schema?{responseMimeType:"application/json",responseSchema:schema}:{})}});
+  const vertex=key.startsWith("AQ.");
+  const list=[...new Set([(localStorage.gmodel||"").trim(),...MODELS].filter(Boolean))];
+  const urls=[];
+  list.forEach(m=>{urls.push(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`);if(vertex)urls.push(`https://aiplatform.googleapis.com/v1/publishers/google/models/${m}:generateContent`)});
+  const post=async(url,n)=>{
+    let r;try{r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body})}
+    catch(e){throw new Error("ইন্টারনেট নেই, অথবা কীটি এই ডোমেইনে সীমাবদ্ধ")}
+    if(r.status===429&&n<1){await sleep(3000);return post(url,n+1)}
+    return r;
+  };
+  // লুপের বদলে রিকার্সন: কিছু প্রিভিউ টুল দীর্ঘ লুপ কেটে দেয়
+  const run=async(k,first)=>{
+    if(k>=urls.length)throw new Error("এআই ত্রুটি "+first);
+    const r=await post(urls[k],0);
+    if(r.ok){const j=await r.json();const t=j.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("");if(!t)throw new Error("এআই কোনো উত্তর দেয়নি (কনটেন্ট ব্লক হতে পারে)");return t}
+    const j=await r.json().catch(()=>({}));const msg=r.status+" · "+(j.error?.message||"").slice(0,150);
+    if((r.status===404||r.status===403)&&k+1<urls.length)return run(k+1,first||msg);
+    throw new Error("এআই ত্রুটি "+(first||msg));
+  };
+  return run(0,"");
+}
+const busy=m=>{let e=$("#busy");if(!m){e&&e.remove();return}if(!e){e=document.createElement("div");e.id="busy";e.className="toast";document.body.append(e)}e.innerHTML='<span class=sp></span> '+m};
+const b64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(f)});
+async function addFiles(files){
+  const ok=[...files].filter(f=>{
+    if(!(/^image\/(jpeg|png|webp)$/.test(f.type)||f.type==="application/pdf")){toast("শুধু JPG, PNG, WEBP বা PDF চলবে");return false}
+    if(f.size>10e6){toast("ফাইল ১০ MB-এর কম হতে হবে");return false}
+    return true});
+  const add=await Promise.all(ok.map(async f=>({name:f.name,type:f.type,data:await b64(f),url:f.type.startsWith("image")?URL.createObjectURL(f):""})));
+  S.pages.push(...add);render();
+}
+async function readPages(){
+  const parts=S.pages.map(p=>({inlineData:{mimeType:p.type,data:p.data}}));
+  parts.push({text:"এই পাঠ্যবইয়ের পৃষ্ঠাগুলো থেকে সম্পূর্ণ লেখা হুবহু তুলে দাও। কিছু যোগ বা বাদ দেবে না। পৃষ্ঠা আলাদা করতে '--- পৃষ্ঠা N ---' লিখবে। পড়া না গেলে '[অস্পষ্ট]' লিখবে।"});
+  return gemini(parts);
+}
+async function makeQuestions(txt,m){
+  const p=`তুমি বাংলাদেশের এইচএসসি শিক্ষক। শুধু নিচের পাঠ্য থেকে প্রশ্ন বানাও। পাঠ্যে না থাকা তথ্য, উদ্ধৃতি বা পৃষ্ঠা নম্বর বানাবে না; তথ্য কম হলে কম প্রশ্ন দাও।
+বিষয়: ${m.sub}। অধ্যায়: ${m.chap}। ধরন: ${m.cats.join(", ")} (ক=জ্ঞানমূলক ১ নম্বর, খ=অনুধাবনমূলক ২, গ=প্রয়োগমূলক ৩, ঘ=উচ্চতর দক্ষতা ৪)। মোট প্রশ্ন: ${m.num}টি, ধরনগুলোতে সমানভাবে ভাগ করে। কঠিনতা: ${m.dif}। উত্তরের দৈর্ঘ্য: ${m.len}।
+গ ও ঘ-এর ক্ষেত্রে প্রথমে সংক্ষিপ্ত উদ্দীপক লিখে প্রশ্ন করো। importance হলো পড়ার অগ্রাধিকার, পরীক্ষায় আসার ভবিষ্যদ্বাণী নয়। source-এ পাঠ্যের সংশ্লিষ্ট পৃষ্ঠা/অংশ লেখো, না থাকলে ফাঁকা রাখো।
+পাঠ্য:\n${txt.slice(0,30000)}`;
+  let arr;try{arr=JSON.parse(await gemini([{text:p}],SCHEMA))}catch(e){if(e instanceof SyntaxError)throw new Error("এআই-এর উত্তর ভুল ফরম্যাটে এসেছে, আবার চেষ্টা করুন");throw e}
+  arr=(Array.isArray(arr)?arr:[]).filter(x=>x.q&&x.answer).map(x=>({...x,subject:m.sub,chapter:m.chap}));
+  if(!arr.length)throw new Error("প্রশ্ন তৈরি হয়নি, আরও লেখা দিন");return arr;
+}
+// স্ক্যান → পড়া → প্রশ্ন বানানো → অধ্যায়ভিত্তিক সংরক্ষণ, এক ক্লিকে
+let working=false;
+async function scanGo(){
+  if(working)return;
+  let sub=$("#sub").value;if(sub==="__o")sub=($("#subx")?.value||"").trim();let chap=$("#chs2")?$("#chs2").value:"";if(!chap||chap==="__o")chap=($("#chap")?.value||"").trim();const typed=$("#txt").value.trim();
+  const cats=[...document.querySelectorAll(".cc:checked")].map(c=>c.value);
+  if(!sub)return toast("আগে বিষয় লিখুন বা বাছুন");
+  if(!chap)return toast("অধ্যায়ের নাম লিখুন");
+  if(!cats.length)return toast("অন্তত একটি ধরন বাছুন");
+  if(!S.pages.length&&typed.length<40)return toast("ছবি/PDF দিন, অথবা লেখা পেস্ট করুন");
+  const m={sub,chap,cats,num:$("#num").value,dif:$("#dif").value,len:$("#len").value};
+  working=true;
+  try{
+    let text=typed;
+    if(S.pages.length){busy("ধাপ ১/৩: পাতা পড়া হচ্ছে…");text=await readPages()}
+    if(text.replace(/\[অস্পষ্ট\]|\s|-|পৃষ্ঠা|\d/g,"").length<40)throw new Error("লেখা পড়া যায়নি, আরও পরিষ্কার ছবি দিন");
+    busy("ধাপ ২/৩: প্রশ্ন বানানো হচ্ছে…");
+    const arr=await makeQuestions(text,m);
+    busy("ধাপ ৩/৩: সংরক্ষণ হচ্ছে…");
+    const b=db.batch(),now=Date.now(),add=[];
+    arr.forEach((x,i)=>{const ref=col().doc(),d={...x,saved:true,due:0,ease:2.3,interval:0,createdAt:now+i};b.set(ref,d);add.push({id:ref.id,...d})});
+    await b.commit();
+    S.qs=[...add.reverse(),...S.qs];S.pages=[];S.f={};S.open={["s:"+sub]:true,[sub+"|"+chap]:true};S.tab="bank";S.filter="সব";
+    confetti();toast(bn(arr.length)+"টি প্রশ্ন সংরক্ষিত ✅");
+  }catch(e){toast(e.message)}
+  busy();working=false;render();
+}
+async function del(id){if(!confirm("মুছে ফেলবেন?"))return;await col().doc(id).delete();S.qs=S.qs.filter(q=>q.id!==id);render()}
+async function edit(id){const q=S.qs.find(x=>x.id===id),a=prompt("উত্তর সম্পাদনা করুন",q.answer);if(a==null)return;q.answer=a;await col().doc(id).update({answer:a});render()}
+function pdf(){ // প্রিন্ট-ডায়ালগ থেকে বাংলা PDF সেভ (ব্রাউজারের ফন্টে নির্ভুল রেন্ডার)
+  const list=S.qs.filter(q=>S.filter==="সব"||q.cat===S.filter);const ak=confirm("উত্তরমালা আলাদা পাতায় দেবেন? (OK = হ্যাঁ)");
+  const w=window.open("");const item=(q,i,a)=>`<p><b>${bn(i+1)}. (${q.cat}) ${esc(q.q)} [${bn(q.marks)}]</b></p>${a?`<p>${esc(q.answer)}</p>`:""}`;
+  w.document.write(`<meta charset=utf-8><link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri&display=swap" rel=stylesheet><body style="font-family:'Hind Siliguri';line-height:1.7"><h2>প্রশ্নপত্র</h2>${list.map((q,i)=>item(q,i,!ak)).join("")}${ak?`<div style="page-break-before:always"></div><h2>উত্তরমালা</h2>${list.map((q,i)=>`<p><b>${bn(i+1)}.</b> ${esc(q.answer)}</p>`).join("")}`:""}`);
+  w.document.close();setTimeout(()=>w.print(),700);
+}
+
+// ---------- Views ----------
+const CURR={
+"পদার্থবিজ্ঞান ১ম পত্র":["ভৌতজগৎ ও পরিমাপ","ভেক্টর","গতিবিদ্যা","নিউটনিয়ান বলবিদ্যা","কাজ, শক্তি ও ক্ষমতা","মহাকর্ষ ও অভিকর্ষ","পদার্থের গাঠনিক ধর্ম","পর্যাবৃত্ত গতি","তরঙ্গ","আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব"],
+"পদার্থবিজ্ঞান ২য় পত্র":["তাপগতিবিদ্যা","স্থির তড়িৎ","চল তড়িৎ","তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও চুম্বকত্ব","তড়িৎচুম্বকীয় আবেশ ও পরিবর্তী প্রবাহ","জ্যামিতিক আলোকবিজ্ঞান","ভৌত আলোকবিজ্ঞান","আধুনিক পদার্থবিজ্ঞানের সূচনা","পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান","সেমিকন্ডাক্টর ও ইলেকট্রনিক্স","জ্যোতির্বিজ্ঞান"],
+"রসায়ন ১ম পত্র":["ল্যাবরেটরির নিরাপদ ব্যবহার","গুণগত রসায়ন","মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন","রাসায়নিক পরিবর্তন","কর্মমুখী রসায়ন"],
+"রসায়ন ২য় পত্র":["পরিবেশ রসায়ন","জৈব রসায়ন","পরিমাণগত রসায়ন","তড়িৎ রসায়ন","অর্থনৈতিক রসায়ন"],
+"জীববিজ্ঞান ১ম পত্র (উদ্ভিদবিজ্ঞান)":["কোষ ও এর গঠন","কোষ বিভাজন","কোষ রসায়ন","অণুজীব","শৈবাল ও ছত্রাক","ব্রায়োফাইটা ও টেরিডোফাইটা","নগ্নবীজী ও আবৃতবীজী উদ্ভিদ","টিস্যু ও টিস্যুতন্ত্র","উদ্ভিদ শারীরতত্ত্ব","উদ্ভিদ প্রজনন","জীবপ্রযুক্তি","জীবের পরিবেশ, বিস্তার ও সংরক্ষণ"],
+"জীববিজ্ঞান ২য় পত্র (প্রাণিবিজ্ঞান)":["প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস","প্রাণীর পরিচিতি","পরিপাক ও শোষণ","রক্ত ও সংবহন","গ্যাসীয় বিনিময়","বর্জ্য ও নিষ্কাশন","চলন ও অঙ্গচালনা","সমন্বয় ও নিয়ন্ত্রণ","মানবদেহের প্রতিরক্ষা","জিনতত্ত্ব ও বিবর্তন","প্রাণীর আচরণ"],
+"উচ্চতর গণিত ১ম পত্র":["ম্যাট্রিক্স ও নির্ণায়ক","ভেক্টর","সরলরেখা","বৃত্ত","বিন্যাস ও সমাবেশ","ত্রিকোণমিতিক অনুপাত","সংযুক্ত কোণের ত্রিকোণমিতিক অনুপাত","ফাংশন ও ফাংশনের লেখচিত্র","অন্তরীকরণ","যোগজীকরণ"],
+"উচ্চতর গণিত ২য় পত্র":["বাস্তব সংখ্যা ও অসমতা","যোগাশ্রয়ী প্রোগ্রাম","জটিল সংখ্যা","বহুপদী ও বহুপদী সমীকরণ","দ্বিপদী বিস্তৃতি","কনিকস","বিপরীত ত্রিকোণমিতিক ফাংশন ও ত্রিকোণমিতিক সমীকরণ","স্থিতিবিদ্যা","সমতলে বস্তুকণার গতি","বিস্তার পরিমাপ ও সম্ভাবনা"],
+"তথ্য ও যোগাযোগ প্রযুক্তি (ICT)":["তথ্য ও যোগাযোগ প্রযুক্তি: বিশ্ব ও বাংলাদেশ প্রেক্ষিত","কমিউনিকেশন সিস্টেমস ও কম্পিউটার নেটওয়ার্কিং","সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস","ওয়েব ডিজাইন পরিচিতি ও HTML","প্রোগ্রামিং ভাষা","ডেটাবেজ ম্যানেজমেন্ট সিস্টেম"]};
+const OTHER_SUBS=["বাংলা ১ম পত্র","বাংলা ২য় পত্র","ইংরেজি ১ম পত্র","ইংরেজি ২য় পত্র","হিসাববিজ্ঞান ১ম পত্র","হিসাববিজ্ঞান ২য় পত্র","ব্যবসায় সংগঠন ও ব্যবস্থাপনা ১ম পত্র","ব্যবসায় সংগঠন ও ব্যবস্থাপনা ২য় পত্র","অর্থনীতি ১ম পত্র","অর্থনীতি ২য় পত্র","পৌরনীতি ও সুশাসন ১ম পত্র","পৌরনীতি ও সুশাসন ২য় পত্র","ইতিহাস","ভূগোল ১ম পত্র","ভূগোল ২য় পত্র","সমাজবিজ্ঞান","যুক্তিবিদ্যা","মনোবিজ্ঞান"];
+const ic=p=>`<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+const ICO={
+ home:'<path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ bank:'<path d="M5 3h12a2 2 0 0 1 2 2v13H7a2 2 0 0 0-2 2z"/><path d="M5 20V5"/><path d="M10 8h5M10 12h5"/>',
+ scan:'<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/>',
+ rev:'<rect x="3" y="7" width="14" height="13" rx="3"/><path d="M7 3.5h11a3 3 0 0 1 3 3V16"/><path d="m7.5 13.5 2.2 2.2 4-4.4"/>',
+ set:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+ cap:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>',
+ mark:'<path d="M6 4h12v17l-6-4-6 4z"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ check:'<circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/>'};
+const NAV=[["home","হোম"],["bank","প্রশ্ন"],["scan","স্ক্যান"],["rev","রিভিশন"],["set","সেটিংস"]];
+function render(){
+  snap();const a=$("#app"),n=$("#nav"),t=$("#top");
+  if(!ready){n.innerHTML="";t.innerHTML="";a.innerHTML=`<div class=card><h2>প্রথমে Firebase সেটআপ</h2><p>ফাইলের উপরের দিকে <code>FIREBASE_CONFIG</code>-এ আপনার Firebase Web App-এর মান বসান।</p></div>`;return}
+  if(!S.user){n.innerHTML="";t.innerHTML="";document.body.classList.remove("in");return authView(a)}
+  document.body.classList.add("in");
+  const dk=document.documentElement.dataset.t==="dark";
+  t.innerHTML=`<div class=logo>${ic(ICO.cap)}</div><b>এআই টিচার</b><button class=ib aria-label="থিম" onclick="theme('${dk?"light":"dark"}')">${ic(dk?ICO.sun:ICO.moon)}</button>`;
+  n.innerHTML=NAV.map(([k,l])=>{const on=S.tab===k?"on":"";return k==="scan"?`<a class="fab ${on}" onclick="go('${k}')"><i>${ic(ICO[k])}</i>${l}</a>`:`<a class="${on}" onclick="go('${k}')">${ic(ICO[k])}${l}</a>`}).join("");
+  a.innerHTML=({home,scan,bank,rev,set})[S.tab]();
+}
+const go=k=>{S.tab=k;render();scrollTo(0,0)};
+function goSub(a){S.tab="bank";S.open={["s:"+a]:true};render();scrollTo(0,0)}
+function authView(a){
+  const em=["📚","✏️","🧪","🔬","🧮","🌟","🎓","💡","📐","🌍","🧠","🎨","🔭","⚛️","📝","🏆","📖","🧬"];
+  const fx=em.map((e,i)=>`<i style="left:${(i*5.5+Math.random()*3)%95}%;font-size:${22+Math.random()*28}px;animation-duration:${9+Math.random()*10}s;animation-delay:-${(Math.random()*14).toFixed(1)}s">${e}</i>`).join("");
+  a.innerHTML=`<div class=fx>${fx}</div><div class=hero style="background:#ffffff26;backdrop-filter:blur(8px);margin-top:8vh"><span class=em>🎓</span><h1>এআই টিচার</h1><div>বই স্ক্যান করো, প্রশ্ন বানাও, মনে রাখো</div></div>
+  <div class="card glass"><button class=ghost style="width:100%;background:#fff;color:#222" onclick="signG()"><b style="color:#4285f4">G</b> Google দিয়ে চালিয়ে যান</button>
+  <p style="text-align:center;color:var(--mut);margin:10px 0">অথবা ইমেইল দিয়ে</p>
+  <input id=em type=email placeholder="ইমেইল"><input id=pw type=password placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)">
+  <div class=row><button onclick="sign(0)">সাইন ইন</button><button class=ghost onclick="sign(1)">নতুন অ্যাকাউন্ট</button></div>
+  <p style="text-align:center;color:var(--mut);font-size:12px;margin-bottom:0">আপনার ছবি ও লেখা প্রশ্ন বানানোর জন্য Google Gemini-তে পাঠানো হয়। অন্য কাউকে দেখানো হয় না।</p></div>`;
+}
+const ERR={"auth/invalid-credential":"ইমেইল বা পাসওয়ার্ড ভুল","auth/email-already-in-use":"এই ইমেইলে অ্যাকাউন্ট আছে","auth/weak-password":"পাসওয়ার্ড দুর্বল","auth/invalid-email":"ইমেইল সঠিক নয়","auth/popup-closed-by-user":"বাতিল করা হয়েছে","auth/unauthorized-domain":"Firebase → Authorized domains-এ এই ডোমেইন যোগ করুন","auth/operation-not-allowed":"Firebase-এ এই সাইন-ইন পদ্ধতি চালু করুন","auth/wrong-password":"পাসওয়ার্ড ভুল","auth/popup-blocked":"পপআপ ব্লক হয়েছে, অনুমতি দিন"};
+async function sign(up){try{const e=$("#em").value,p=$("#pw").value;up?await auth.createUserWithEmailAndPassword(e,p):await auth.signInWithEmailAndPassword(e,p)}catch(x){toast(ERR[x.code]||"সমস্যা: "+x.code)}}
+async function signG(){try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(x){toast(ERR[x.code]||"Google লগইন সমস্যা: "+x.code)}}
+async function delAcc(){
+  if(!confirm("অ্যাকাউন্ট ও সব প্রশ্ন চিরতরে মুছে যাবে। নিশ্চিত?"))return;
+  const u=auth.currentUser;
+  try{
+    if(u.providerData.some(p=>p.providerId==="google.com"))await u.reauthenticateWithPopup(new firebase.auth.GoogleAuthProvider());
+    else{const pw=prompt("নিশ্চিত করতে পাসওয়ার্ড দিন");if(!pw)return;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,pw))}
+    busy("মোছা হচ্ছে…");
+    const sn=await col().get();
+    const ch=[];for(let i=0;i<sn.docs.length;i+=400)ch.push(sn.docs.slice(i,i+400));await Promise.all(ch.map(c=>{const b=db.batch();c.forEach(d=>b.delete(d.ref));return b.commit()}));
+    await u.delete();busy();toast("অ্যাকাউন্ট মুছে গেছে");
+  }catch(x){busy();toast(ERR[x.code]||"মোছা যায়নি: "+(x.code||x.message))}
+}
+async function testKey(){localStorage.gkey=$("#gk").value.trim();localStorage.gmodel=$("#gm").value.trim();busy("পরীক্ষা চলছে…");try{await gemini([{text:"শুধু 'ঠিক আছে' লেখো"}]);toast("✅ কী কাজ করছে")}catch(e){toast(e.message)}busy()}
+function home(){
+  const sv=S.qs.filter(q=>q.saved).length,d=due().length,ok=S.qs.filter(q=>q.lastOk).length;
+  const pct=sv?Math.round(ok/sv*100):0,off=(251.3*(1-pct/100)).toFixed(1);
+  const subj={};S.qs.forEach(q=>{const a=q.subject||"অন্যান্য";(subj[a]??={n:0,c:new Set()}).n++;subj[a].c.add(q.chapter)});
+  const GR=["#7c3aed,#ec4899","#0ea5e9,#10b981","#f59e0b,#ef4444","#6366f1,#22d3ee","#ec4899,#f59e0b","#10b981,#84cc16"];
+  const cards=Object.entries(subj).map(([a,v],i)=>`<div class=sc style="background:linear-gradient(135deg,${GR[i%GR.length]});animation-delay:${i*70}ms" data-k="${esc(a)}" onclick="goSub(this.dataset.k)"><b>${esc(a)}</b><small>${bn(v.c.size)} অধ্যায় · ${bn(v.n)} প্রশ্ন</small></div>`).join("");
+  const recent=S.qs.slice(0,4).map(q=>`<div style="margin:6px 0"><span class="badge c-${q.cat}">${q.cat}</span>${esc(q.q.slice(0,70))}</div>`).join("")||"এখনো কিছু নেই। নিচের স্ক্যান বাটন থেকে শুরু করুন।";
+  return `<div class=hero2><div style="flex:1"><div style="opacity:.92;font-size:14px">${d?"আজকের লক্ষ্য":"দারুণ কাজ!"}</div><h2 style="font-size:23px;margin:2px 0 12px">${d?bn(d)+"টি প্রশ্ন রিভিশন বাকি":"আজকের রিভিশন শেষ"}</h2><button class=glassbtn onclick="go('rev')">রিভিশন শুরু</button></div>
+  <svg class=ring viewBox="0 0 100 100"><circle class=tr cx=50 cy=50 r=40></circle><circle class=pg cx=50 cy=50 r=40 stroke-dasharray=251.3 stroke-dashoffset=${off} transform="rotate(-90 50 50)"></circle><text x=50 y=57 text-anchor=middle>${bn(pct)}%</text></svg></div>
+  <div class=stats><div class="stat2 s1">${ic(ICO.mark)}<b>${bn(sv)}</b>সংরক্ষিত</div><div class="stat2 s2">${ic(ICO.clock)}<b>${bn(d)}</b>রিভিশন বাকি</div><div class="stat2 s3">${ic(ICO.check)}<b>${bn(ok)}</b>মনে আছে</div></div>
+  ${cards?`<div class=h>তোমার বিষয়সমূহ</div><div class=subs>${cards}</div>`:""}
+  <div class=card><div class=h style="margin-top:0">সাম্প্রতিক প্রশ্ন</div>${recent}</div>`;
+}
+function snap(){if(!$("#sub"))return;S.f={sub:$("#sub").value,subx:$("#subx")?.value||"",ch:$("#chs2")?.value||"",chap:$("#chap")?.value||"",txt:$("#txt").value,num:$("#num").value,dif:$("#dif").value,len:$("#len").value,cats:[...document.querySelectorAll(".cc")].map(c=>c.checked)}}
+function scan(){
+  const f=S.f||{};
+  const sel=(l,v,d)=>l.map(o=>`<option ${(v||d)==o?"selected":""}>${o}</option>`).join("");
+  const opt=x=>`<option value="${esc(x)}" ${f.sub===x?"selected":""}>${esc(x)}</option>`;
+  const known=CURR[f.sub];
+  const usedC=[...new Set(S.qs.filter(q=>q.subject===f.sub).map(q=>q.chapter).filter(Boolean))];
+  const chapUI=!f.sub?`<div class=sel-note>আগে বিষয় বাছুন</div>`
+   :known?`<select id=chs2 onchange="snap();render()"><option value="">— অধ্যায় বাছুন —</option>${known.map((c,i)=>`<option value="${esc(c)}" ${f.ch===c?"selected":""}>${bn(i+1)}. ${esc(c)}</option>`).join("")}<option value="__o" ${f.ch==="__o"?"selected":""}>অন্য (নিজে লিখুন)</option></select>${f.ch==="__o"?`<input id=chap placeholder="অধ্যায়ের নাম" value="${esc(f.chap||"")}">`:""}`
+   :`<input id=chap list=chs placeholder="অধ্যায়ের নাম লিখুন" value="${esc(f.chap||"")}"><datalist id=chs>${usedC.map(x=>`<option value="${esc(x)}">`).join("")}</datalist><div class=sel-note>এই বিষয়ের অধ্যায় তালিকা এখনো যোগ হয়নি, নিজে লিখুন।</div>`;
+  return `<div class=card><h3>১. কোন বই, কোন অধ্যায়?</h3>
+  <select id=sub onchange="snap();S.f.ch='';S.f.chap='';render()"><option value="">— বিষয় / বই বাছুন —</option>
+  <optgroup label="অধ্যায় তালিকাসহ">${Object.keys(CURR).map(opt).join("")}</optgroup>
+  <optgroup label="অন্যান্য বিষয়">${OTHER_SUBS.map(opt).join("")}</optgroup>
+  <option value="__o" ${f.sub==="__o"?"selected":""}>অন্য বিষয় (নিজে লিখুন)</option></select>
+  ${f.sub==="__o"?`<input id=subx placeholder="বিষয়ের নাম" value="${esc(f.subx||"")}">`:""}
+  ${f.sub==="__o"?`<input id=chap placeholder="অধ্যায়ের নাম" value="${esc(f.chap||"")}">`:chapUI}
+  <div class=sel-note>অধ্যায়ের নামগুলো এনসিটিবি সিলেবাস থেকে লেখা। আপনার বইয়ের সংস্করণে আলাদা হলে "অন্য" বেছে নিজে লিখুন।</div></div>
+  <div class=card><h3>২. 📸 পৃষ্ঠা যোগ করুন</h3>
+  <div class=row><button onclick="$('#cam').click()">ক্যামেরা</button><button class=ghost onclick="$('#gal').click()">গ্যালারি / PDF</button></div>
+  <input id=cam type=file accept="image/*" capture=environment hidden onchange="addFiles(this.files)">
+  <input id=gal type=file accept="image/*,application/pdf" multiple hidden onchange="addFiles(this.files)">
+  <div class=thumb>${S.pages.map((p,i)=>`<div style="position:relative">${p.url?`<img src="${p.url}">`:`<div class=pill style="height:80px;padding:30px 10px">📄 ${esc(p.name.slice(0,12))}</div>`}<button style="position:absolute;top:2px;right:2px;padding:0 8px" class=no onclick="S.pages.splice(${i},1);render()">×</button></div>`).join("")}</div>
+  <details><summary>📝 লেখা পেস্ট করতে চান?</summary><textarea id=txt placeholder="ছবি ছাড়াও বইয়ের লেখা এখানে দিতে পারেন">${esc(f.txt||"")}</textarea></details></div>
+  <div class=card><details><summary>⚙️ আরও সেটিংস (ক খ গ ঘ সব চালু আছে)</summary>
+  <div class=row style="margin:8px 0">${["ক","খ","গ","ঘ"].map((c,i)=>`<label><input class=cc type=checkbox value=${c} ${!f.cats||f.cats[i]?"checked":""} style="width:auto"> <span class="badge c-${c}">${c}</span></label>`).join("")}</div>
+  <div class=row><div><label>সংখ্যা</label><select id=num>${[5,8,10,15,20].map(n=>`<option value=${n} ${(f.num||10)==n?"selected":""}>${bn(n)}</option>`).join("")}</select></div><div><label>কঠিনতা</label><select id=dif>${sel(["সহজ","মাঝারি","কঠিন"],f.dif,"মাঝারি")}</select></div><div><label>উত্তর</label><select id=len>${sel(["সংক্ষিপ্ত","মাঝারি","বিস্তারিত"],f.len,"মাঝারি")}</select></div></div></details></div>
+  <button style="width:100%;font-size:18px;padding:16px" onclick="scanGo()">🚀 স্ক্যান করে প্রশ্ন বানাও</button>
+  <p style="font-size:13px;color:var(--mut)">প্রশ্নগুলো বিষয় ও অধ্যায় অনুযায়ী নিজে থেকে "প্রশ্ন" ট্যাবে জমা হবে। এআই ভুল করতে পারে, তাই উত্তর মিলিয়ে নিন।</p>`;
+}
+function qcard(q,id,btns){
+  const o=S.show[id];
+  return `<div class=card><span class="badge c-${q.cat}">${q.cat}</span><span class=pill>${bn(q.marks)} নম্বর</span> <span class=pill>অগ্রাধিকার: ${esc(q.importance)}</span>
+  <p style="white-space:pre-wrap"><b>${esc(q.q)}</b></p>
+  ${o?`<div class=ans>${esc(q.answer)}${q.explanation?`\n\n💡 ${esc(q.explanation)}`:""}${q.source?`\n📖 ${esc(q.source)}`:""}</div>`:""}
+  <div class=row style="margin-top:8px"><button class=ghost onclick="S.show['${id}']=!S.show['${id}'];render()">${o?"উত্তর লুকাও":"উত্তর দেখো"}</button>${btns||""}</div></div>`;
+}
+function bank(){
+  const l=S.qs.filter(q=>S.filter==="সব"||q.cat===S.filter),g={};
+  l.forEach(q=>{const a=q.subject||"বিষয় নেই",c=q.chapter||"অধ্যায় নেই";((g[a]??={})[c]??=[]).push(q)});
+  const body=Object.entries(g).map(([a,cs])=>`<details class=card data-k="${esc("s:"+a)}" ontoggle="S.open[this.dataset.k]=this.open" ${S.open["s:"+a]===false?"":"open"}><summary><b>📘 ${esc(a)}</b> <span class=pill>${bn(Object.values(cs).flat().length)}</span></summary>
+  ${Object.entries(cs).map(([c,qs])=>`<details data-k="${esc(a+"|"+c)}" ontoggle="S.open[this.dataset.k]=this.open" ${S.open[a+"|"+c]?"open":""} style="margin:10px 0"><summary>📖 ${esc(c)} <span class=pill>${bn(qs.length)}</span></summary>${qs.map(q=>qcard(q,q.id,`<button class=ghost onclick="edit('${q.id}')">✏️</button><button class=no onclick="del('${q.id}')">🗑</button>`)).join("")}</details>`).join("")}</details>`).join("");
+  return `<div class=row style="margin-bottom:10px">${["সব","ক","খ","গ","ঘ"].map(c=>`<button class="${S.filter===c?"":"ghost"}" onclick="S.filter='${c}';render()">${c}</button>`).join("")}</div>
+  ${l.length?`<button class=ghost style="width:100%;margin-bottom:10px" onclick="pdf()">📄 PDF করো</button>`:""}
+  ${body||`<div class=card>কোনো প্রশ্ন নেই। স্ক্যান থেকে বানিয়ে নিন।</div>`}`;
+}
+function rev(){
+  const d=due();
+  if(!d.length)return `<div class=card style="text-align:center"><div style="font-size:60px">🎉</div><h3>আজকের রিভিশন শেষ!</h3><p>${bn(S.qs.filter(q=>q.saved).length)}টি প্রশ্ন সংরক্ষিত আছে।</p></div>`;
+  const q=d[0];
+  return `<p style="text-align:center">বাকি: <b>${bn(d.length)}</b>টি। কার্ডে ট্যাপ করে উত্তর দেখুন</p>
+  <div class="fc ${S.flip?"f":""}" onclick="S.flip=!S.flip;render()"><div class=fi><div class="face fr"><div><span class="badge c-${q.cat}">${q.cat}</span><br>${esc(q.q)}</div></div><div class="face bk">${esc(q.answer)}</div></div></div>
+  ${S.flip?`<div class=row><button class=no onclick="grade(S.qs.find(x=>x.id=='${q.id}'),false)">😅 আবার পড়ব</button><button class=ok onclick="grade(S.qs.find(x=>x.id=='${q.id}'),true)">✅ মনে আছে</button></div>`:""}`;
+}
+function set(){
+  return `<div class=card><h3>🔑 Gemini API কী</h3><p style="font-size:13px;color:var(--mut)">কী শুধু এই ডিভাইসের ব্রাউজারে থাকে। Google AI Studio-তে কীটি আপনার সাইটের ডোমেইনে সীমাবদ্ধ করে রাখুন।</p>
+  <input id=gk type=password placeholder="AIza… বা AQ.…" value="${esc(localStorage.gkey||"")}"><input id=gm placeholder="মডেল (ঐচ্ছিক, যেমন gemini-2.5-flash)" value="${esc(localStorage.gmodel||"")}">
+  <div class=row><button onclick="localStorage.gkey=$('#gk').value.trim();localStorage.gmodel=$('#gm').value.trim();toast('সেভ হয়েছে')">সেভ</button><button class=ok onclick="testKey()">🔌 পরীক্ষা করো</button></div></div>
+  <div class=card><h3>🎨 থিম</h3><div class=row><button class=ghost onclick="theme('light')">☀️ লাইট</button><button class=ghost onclick="theme('dark')">🌙 ডার্ক</button></div></div>
+  <div class=card><p>${esc(S.user.email||S.user.displayName||"")}</p><div class=row><button class=ghost onclick="auth.signOut()">লগ আউট</button><button class=no onclick="delAcc()">🗑 অ্যাকাউন্ট মুছুন</button></div></div>`;
+}
+const theme=t=>{localStorage.t=t;document.documentElement.dataset.t=t;render()};
+if(ready)auth.onAuthStateChanged(async u=>{S.user=u;if(u){try{await load()}catch(e){toast("ডাটা আনা যায়নি: "+e.code)}}render()});
+render();
+</script>
+</body>
+</html>
